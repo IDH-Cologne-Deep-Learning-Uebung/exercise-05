@@ -2,49 +2,20 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import precision_score, recall_score
-def strIntoAscii(column, dataframe):
-   dataframe[column] = dataframe[column].astype(str)
-   for j in range(len(dataframe)):
-    diff = 0
-    for char in  dataframe.at[j, column]:
-        diff = diff + ord(char)
-    dataframe.at[j, column] = str(diff)
-   dataframe[column] = dataframe[column].astype("int64")
    
 
 # read the data from a CSV file (included in the repository)
-df = pd.read_csv("data/train.csv")
+titanic = pd.read_csv("data/train.csv")
+
+
+# when we hot encode it, then there is no need to drop this labels
+# if u still wanna do it uncomment this line
+# df = df.drop(labels=["Name", "PassengerId"], axis=1, inplace=True)
+
+titanic = pd.get_dummies(titanic).dropna()
 
 # step 1 
-df.drop(labels=["Name", "PassengerId"], axis=1, inplace=True)
-
-# fixxing Sex
-for i in range(len(df)):
-    if df.at[i, "Sex"] == "male":
-        df.at[i, "Sex"] = "0"
-    else:
-        df.at[i,"Sex"] = "1"
-
-df["Sex"] = df["Sex"].astype("int32")
-
-strIntoAscii("Cabin",df)
-strIntoAscii("Embarked", df)
-# fix Cabin
-
-# fix ticket
-df["Ticket"] = df["Ticket"].str.extract("(\d+)", expand=False)
-
-df["Ticket"] = df["Ticket"].astype("float")
-df = df.dropna()
-
-# labels = classes that we want to predict
-labels =  df.iloc[:, [0]]
-
-# attributes are the attributes that we want to change
-attributes = df.loc[:, df.columns != "Survived"]
-
-
-XTrain, Xtest , yTrain, yTest = train_test_split(df.drop("Survived", axis=1), df["Survived"])
+XTrain, Xtest , yTrain, yTest = train_test_split(titanic.drop("Survived", axis=1), titanic["Survived"])
 
 LogReg = LogisticRegression(solver="liblinear")
 
