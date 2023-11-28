@@ -1,8 +1,10 @@
-import array
 import pandas as pd
 import numpy as np
 import sklearn
+from sklearn.base import ClassifierMixin
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import precision_recall_fscore_support
 
 # read the data from a CSV file (included in the repository)
 df = pd.read_csv("data/train.csv")
@@ -34,9 +36,23 @@ print(df)
 # ## Step 4
 # 1. As a next step, we need to split the input features from the training labels. This can be done easily with `pandas`.
 y=df.iloc[:,[-1]]
-x=df.drop(y.columns,axis = 1)
+X=df.drop(y.columns,axis = 1)
 # 2. Secondly, we need to split training and test data. This can be done with the function [`sklearn.model_selection.train_test_split()`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html#sklearn.model_selection.train_test_split) from the `scikit-learn` library.
-sklearn.model_selection.train_test_split()
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 4. Lastly, calculate precision/recall/f-score on the test data using the appropriate functions from `scikit-learn`.
+# 3. Finally, initialize a LogisticRegression object with a liblinear solver, and fit it to the training data.
+logisticRegr = LogisticRegression(solver='liblinear')
+logisticRegr.fit(X_train, y_train)
+print(y_train.isnull().sum())
+logisticRegr.predict(X_test[0:10])
+predictions = logisticRegr.predict(X_test)
 
+cls = ClassifierMixin()
+cls.fit(X_train, y_train)
+y_pred = cls.predict(X_test)
+
+# 4. Lastly, calculate precision/recall/f-score on the test data using the appropriate functions from scikit-learn.
+precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred, average='binary')
+print(f'Precision: {precision}')
+print(f'Recall: {recall}')
+print(f'F1-Score: {f1}')
